@@ -8,9 +8,15 @@ addi x21, x0, 0 # C loop index starts with 0
 addi x22, x0, 0 # K loop index starts with 0
 addi x23, x0, 0 # B loop index starts with 0
 addi x7, x0, 0 # accumation result initilization
-C_CHECK: beq x21, x11, C_END
-K_CHECK: beq x22, x12, K_END
 B_CHECK: beq x23, x13, B_END
+nop
+nop
+nop
+K_CHECK: beq x22, x12, K_END
+nop
+nop
+nop
+C_CHECK: beq x21, x11, C_END
 nop
 nop
 nop
