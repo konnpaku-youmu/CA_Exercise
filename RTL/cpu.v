@@ -38,7 +38,7 @@ module cpu(
 
    );
 
-wire              zero_flag, zero_flag_mem;
+wire              zero_flag, zero_flag_mem, branch_taken;
 wire [      63:0] branch_pc, updated_pc, current_pc, jump_pc,
                   updated_pc_id, updated_pc_ex, branch_pc_mem, jump_pc_mem, updated_pc_mem;
 wire [      31:0] instruction, instruction_id, instruction_ex,
@@ -78,11 +78,11 @@ pc #(
 ) program_counter (
    .clk       (clk               ),
    .arst_n    (arst_n            ),
-   .branch_pc (branch_pc_mem     ),   
-   .jump_pc   (jump_pc_mem       ),
-   .zero_flag (zero_flag_mem     ),
-   .branch    (branch_mem        ),
-   .jump      (jump_mem          ),
+   .branch_pc (branch_pc         ),
+   .jump_pc   (jump_pc           ),
+   .zero_flag (branch_taken      ),
+   .branch    (branch            ),
+   .jump      (jump              ),
    .current_pc(current_pc        ),
    .enable    (enable && pc_write),
    .updated_pc(updated_pc        )
@@ -118,7 +118,7 @@ reg_arstn_en#(
 )
 pipeline_IF_ID(
    .clk     (clk                             ),
-   .arst_n  (arst_n                          ),
+   .arst_n  (arst_n && branch_taken && branch),
    .en      (enable && pipeline_id_en        ),
    .din     ({updated_pc, instruction}       ),
    .dout    ({updated_pc_id, instruction_id} )
@@ -170,9 +170,29 @@ register_file #(
    .rdata_2  (regfile_rdata_2   )
 );
 
+alu#(
+   .DATA_W(64)
+) reg_comp(
+   .alu_in_0 (regfile_rdata_1 ),
+   .alu_in_1 (regfile_rdata_2 ),
+   .alu_ctrl (4'd6            ),  // subtraction
+   .alu_out  (                ),
+   .zero_flag(branch_taken    ),
+   .overflow (                )
+);
+
 immediate_extend_unit immediate_extend_u(
     .instruction         (instruction_id),
     .immediate_extended  (immediate_extended)
+);
+
+branch_unit#(
+   .DATA_W(64)
+)branch_unit(
+   .updated_pc         (updated_pc_id        ),
+   .immediate_extended (immediate_extended   ),
+   .branch_pc          (branch_pc            ),
+   .jump_pc            (jump_pc              )
 );
 
 //////////////////////////////////////
@@ -258,15 +278,6 @@ alu#(
    .alu_out  (alu_out         ),
    .zero_flag(zero_flag       ),
    .overflow (                )
-);
-
-branch_unit#(
-   .DATA_W(64)
-)branch_unit(
-   .updated_pc         (updated_pc_ex        ),
-   .immediate_extended (immediate_extended_ex),
-   .branch_pc          (branch_pc            ),
-   .jump_pc            (jump_pc              )
 );
 
 //////////////////////////////////////
