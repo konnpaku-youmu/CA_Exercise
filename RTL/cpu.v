@@ -107,8 +107,8 @@ sram_BW32 #(
    .rdata_ext(rdata_ext     )
 );
 
-assign updated_pc_if = (branch_taken) ? 64'b0 : updated_pc;
-assign instruction_if = (branch_taken) ? 32'b0 : instruction;
+assign updated_pc_if = (branch_taken || jump) ? 64'b0 : updated_pc;
+assign instruction_if = (branch_taken || jump) ? 32'b0 : instruction;
 
 /////////////////////////////////////
 //////                       ////////
@@ -123,7 +123,7 @@ pipeline_IF_ID(
    .clk     (clk                             ),
    .arst_n  (arst_n                          ),
    .en      (enable && pipeline_id_en        ),
-   .din     ({updated_pc_if, instruction_if}       ),
+   .din     ({updated_pc_if, instruction_if} ),
    .dout    ({updated_pc_id, instruction_id} )
 );
 
