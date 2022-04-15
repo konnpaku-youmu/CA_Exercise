@@ -121,7 +121,7 @@ reg_arstn_en#(
 )
 pipeline_IF_ID(
    .clk     (clk                                   ),
-   .arst_n  (arst_n && (~(branch_taken || jump))   ),
+   .arst_n  (arst_n && ~branch_taken && ~jump      ),
    .en      (enable && pipeline_id_en              ),
    .din     ({updated_pc, instruction}             ),
    .dout    ({updated_pc_id, instruction_id}       )
