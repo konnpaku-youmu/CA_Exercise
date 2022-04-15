@@ -82,7 +82,7 @@ pc #(
    .jump_pc   (jump_pc           ),
    .zero_flag (branch_taken      ),
    .branch    (branch            ),
-   .jump      (jump_mem          ),
+   .jump      (jump              ),
    .current_pc(current_pc        ),
    .enable    (enable && pc_write),
    .updated_pc(updated_pc        )
@@ -140,12 +140,12 @@ control_unit control_unit(
    .alu_op   (alu_op          ), // EX
    .alu_src  (alu_src         ), // EX
    .branch   (branch          ), // MEM
-   .jump     (jump            ),  // MEM
+   .jump     (jump            ), // MEM
    .mem_read (mem_read        ), // MEM
    .mem_write(mem_write       ), // MEM
    .mem_2_reg(mem_2_reg       ), // WB
    .reg_write(reg_write       ), // WB
-   .reg_dst  (reg_dst         ) // NC? 
+   .reg_dst  (reg_dst         )  // NC?
 );
 
 hazard_mux hazard_mux(
