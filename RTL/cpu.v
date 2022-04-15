@@ -170,7 +170,7 @@ register_file #(
    .rdata_2  (regfile_rdata_2   )
 );
 
-assign branch_taken = (regfile_rdata_1 == regfile_rdata_2) && branch;
+assign branch_taken = (regfile_rdata_1 == regfile_rdata_2) & branch;
 
 immediate_extend_unit immediate_extend_u(
     .instruction         (instruction_id),
