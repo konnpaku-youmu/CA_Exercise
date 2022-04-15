@@ -82,7 +82,7 @@ pc #(
    .jump_pc   (jump_pc           ),
    .zero_flag (branch_taken      ),
    .branch    (branch            ),
-   .jump      (jump              ),
+   .jump      (jump_mem          ),
    .current_pc(current_pc        ),
    .enable    (enable && pc_write),
    .updated_pc(updated_pc        )
