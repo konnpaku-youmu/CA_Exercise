@@ -107,9 +107,6 @@ sram_BW32 #(
    .rdata_ext(rdata_ext     )
 );
 
-// assign updated_pc_if = (branch_taken || jump) ? 64'b0 : updated_pc;
-// assign instruction_if = (branch_taken || jump) ? 32'b0 : instruction;
-
 /////////////////////////////////////
 //////                       ////////
 ////// Pipeline: IF_ID stage ////////
