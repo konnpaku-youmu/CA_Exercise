@@ -40,8 +40,9 @@ module cpu(
 
 wire              zero_flag, zero_flag_mem, branch_taken;
 wire [      63:0] branch_pc, updated_pc, current_pc, jump_pc,
+                  updated_pc_if,
                   updated_pc_id, updated_pc_ex, branch_pc_mem, jump_pc_mem, updated_pc_mem;
-wire [      31:0] instruction, instruction_id, instruction_ex,
+wire [      31:0] instruction, instruction_if, instruction_id, instruction_ex,
                   instruction_mem, instruction_wb;
 wire [       1:0] alu_op, alu_op_ex,
                   fwd_mux_1, fwd_mux_2,
@@ -106,6 +107,8 @@ sram_BW32 #(
    .rdata_ext(rdata_ext     )
 );
 
+assign updated_pc_if = (branch_taken) ? 64'b0 : updated_pc;
+assign instruction_if = (branch_taken) ? 32'b0 : instruction
 
 /////////////////////////////////////
 //////                       ////////
@@ -120,7 +123,7 @@ pipeline_IF_ID(
    .clk     (clk                             ),
    .arst_n  (arst_n                          ),
    .en      (enable && pipeline_id_en        ),
-   .din     ({updated_pc, instruction}       ),
+   .din     ({updated_pc_if, instruction_if}       ),
    .dout    ({updated_pc_id, instruction_id} )
 );
 
