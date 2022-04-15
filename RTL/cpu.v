@@ -38,10 +38,11 @@ module cpu(
 
    );
 
-wire              zero_flag, zero_flag_mem;
+wire              zero_flag, zero_flag_mem, branch_taken;
 wire [      63:0] branch_pc, updated_pc, current_pc, jump_pc,
+                  updated_pc_if,
                   updated_pc_id, updated_pc_ex, branch_pc_mem, jump_pc_mem, updated_pc_mem;
-wire [      31:0] instruction, instruction_id, instruction_ex,
+wire [      31:0] instruction, instruction_if, instruction_id, instruction_ex,
                   instruction_mem, instruction_wb;
 wire [       1:0] alu_op, alu_op_ex,
                   fwd_mux_1, fwd_mux_2,
@@ -78,11 +79,11 @@ pc #(
 ) program_counter (
    .clk       (clk               ),
    .arst_n    (arst_n            ),
-   .branch_pc (branch_pc_mem     ),   
-   .jump_pc   (jump_pc_mem       ),
-   .zero_flag (zero_flag_mem     ),
-   .branch    (branch_mem        ),
-   .jump      (jump_mem          ),
+   .branch_pc (branch_pc         ),
+   .jump_pc   (jump_pc           ),
+   .zero_flag (branch_taken      ),
+   .branch    (branch            ),
+   .jump      (jump              ),
    .current_pc(current_pc        ),
    .enable    (enable && pc_write),
    .updated_pc(updated_pc        )
@@ -106,7 +107,6 @@ sram_BW32 #(
    .rdata_ext(rdata_ext     )
 );
 
-
 /////////////////////////////////////
 //////                       ////////
 ////// Pipeline: IF_ID stage ////////
@@ -117,11 +117,11 @@ reg_arstn_en#(
    .DATA_W(96)
 )
 pipeline_IF_ID(
-   .clk     (clk                             ),
-   .arst_n  (arst_n                          ),
-   .en      (enable && pipeline_id_en        ),
-   .din     ({current_pc, instruction}       ),
-   .dout    ({updated_pc_id, instruction_id} )
+   .clk     (clk                                   ),
+   .arst_n  (arst_n && !branch_taken && !jump      ),
+   .en      (enable && pipeline_id_en              ),
+   .din     ({updated_pc, instruction}             ),
+   .dout    ({updated_pc_id, instruction_id}       )
 );
 
 hazard_detection hazard_det_unit(
@@ -140,12 +140,12 @@ control_unit control_unit(
    .alu_op   (alu_op          ), // EX
    .alu_src  (alu_src         ), // EX
    .branch   (branch          ), // MEM
-   .jump     (jump            ),  // MEM
+   .jump     (jump            ), // MEM
    .mem_read (mem_read        ), // MEM
    .mem_write(mem_write       ), // MEM
    .mem_2_reg(mem_2_reg       ), // WB
    .reg_write(reg_write       ), // WB
-   .reg_dst  (reg_dst         ) // NC? 
+   .reg_dst  (reg_dst         )  // NC?
 );
 
 hazard_mux hazard_mux(
@@ -170,9 +170,20 @@ register_file #(
    .rdata_2  (regfile_rdata_2   )
 );
 
+assign branch_taken = (regfile_rdata_1 == regfile_rdata_2) && branch;
+
 immediate_extend_unit immediate_extend_u(
     .instruction         (instruction_id),
     .immediate_extended  (immediate_extended)
+);
+
+branch_unit#(
+   .DATA_W(64)
+)branch_unit(
+   .updated_pc         (updated_pc_id        ),
+   .immediate_extended (immediate_extended   ),
+   .branch_pc          (branch_pc            ),
+   .jump_pc            (jump_pc              )
 );
 
 //////////////////////////////////////
@@ -258,15 +269,6 @@ alu#(
    .alu_out  (alu_out         ),
    .zero_flag(zero_flag       ),
    .overflow (                )
-);
-
-branch_unit#(
-   .DATA_W(64)
-)branch_unit(
-   .updated_pc         (updated_pc_ex        ),
-   .immediate_extended (immediate_extended_ex),
-   .branch_pc          (branch_pc            ),
-   .jump_pc            (jump_pc              )
 );
 
 //////////////////////////////////////
