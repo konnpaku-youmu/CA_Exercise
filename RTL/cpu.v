@@ -108,7 +108,7 @@ sram_BW32 #(
 );
 
 assign updated_pc_if = (branch_taken) ? 64'b0 : updated_pc;
-assign instruction_if = (branch_taken) ? 32'b0 : instruction
+assign instruction_if = (branch_taken) ? 32'b0 : instruction;
 
 /////////////////////////////////////
 //////                       ////////
