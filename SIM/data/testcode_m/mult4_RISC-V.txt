@@ -17,6 +17,9 @@ nop
 nop
 nop
 C_CHECK: beq x21, x11, C_END
+nop
+nop
+nop
 ld x4, 0(x25) # load 1 input data
 ld x5, 0(x26) # load 1 weight data
 mul x6, x4, x5 # multiply the input with the weight
