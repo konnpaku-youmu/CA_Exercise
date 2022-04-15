@@ -170,16 +170,7 @@ register_file #(
    .rdata_2  (regfile_rdata_2   )
 );
 
-alu#(
-   .DATA_W(64)
-) reg_comp(
-   .alu_in_0 (regfile_rdata_1 ),
-   .alu_in_1 (regfile_rdata_2 ),
-   .alu_ctrl (4'd6            ),  // subtraction
-   .alu_out  (                ),
-   .zero_flag(branch_taken    ),
-   .overflow (                )
-);
+assign branch_taken = (regfile_rdata_1 == regfile_rdata_2) && branch;
 
 immediate_extend_unit immediate_extend_u(
     .instruction         (instruction_id),
